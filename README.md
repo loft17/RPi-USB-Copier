@@ -53,7 +53,6 @@ Asegúrate de tener instalado en tu Raspberry Pi:
     git clone https://github.com/loft17/RPi-USB-Copier.git
     cd rpi-usb-copier
     ```
-    O descarga el archivo `app.py` (o como lo llames).
 
 2.  **Permisos (Opcional):**
     ```bash
