@@ -38,7 +38,7 @@ Asegúrate de tener instalado en tu Raspberry Pi:
 3.  **pip** (instalador de paquetes Python)
 4.  **psutil:**
     ```bash
-    pip install psutil
+    apt install python3-tk python3-sh python3-psutil -y
     ```
 5.  **exiftool:**
     ```bash
