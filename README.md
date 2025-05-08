@@ -2,43 +2,45 @@
 
 ![RPi USB Copier Screenshot](ruta/a/tu/screenshot.png) <!-- Reemplaza con una captura de pantalla real -->
 
-**RPi USB Copier** es una aplicación de escritorio con interfaz gráfica (GUI) diseñada para Raspberry Pi (probada en RPi 4 y 5). Facilita la copia de seguridad completa de dispositivos de almacenamiento USB (como tarjetas SD de cámaras o memorias USB) a otro dispositivo USB de destino, organizando las copias en una estructura de carpetas basada en la fecha y la información de la cámara (si está disponible).
+**RPi USB Copier** es una aplicación de escritorio con interfaz gráfica (GUI) diseñada para Raspberry Pi (probada en RPi 4 y 5), optimizada para pantallas de **480x300px**. Facilita la copia de seguridad completa de dispositivos de almacenamiento USB (como tarjetas SD de cámaras o memorias USB) a otro dispositivo USB de destino, organizando las copias en una estructura de carpetas basada en la fecha y la información de la cámara (si está disponible).
 
-La interfaz está optimizada para pantallas pequeñas (480x300px) y uso táctil.
+La interfaz está pensada para ser usada con los dedos (táctil) y utiliza un tema oscuro.
 
 ## Características Principales
 
-*   **Interfaz Gráfica Táctil:** Diseñada para pantallas de 480x300px, con botones grandes y un tema oscuro minimalista.
-*   **Detección de Dispositivos USB:** Detecta automáticamente unidades USB conectadas para seleccionar origen y destino.
-*   **Información del Dispositivo:** Muestra el nombre, espacio libre y total de los dispositivos seleccionados.
+*   **Interfaz Gráfica Táctil:** Optimizada para pantallas de 480x300px, con botones grandes y tema oscuro.
+*   **Detección de Dispositivos USB:** Detecta automáticamente unidades USB montadas y válidas.
+*   **Validación de Montaje:** Comprueba que los dispositivos seleccionados sigan montados antes de iniciar la copia.
+*   **Información del Dispositivo:** Muestra nombre, espacio libre y total de los dispositivos.
 *   **Organización Inteligente de Copias:**
-    *   Las copias se guardan en una carpeta con la fecha actual (o seleccionada) en formato `YYYYMMDD`.
-    *   Dentro, se crea una subcarpeta `MARCA-MODELO_XXXXX` (ej. `SONY-ILCE-6400_00001`).
-    *   La marca y modelo se intentan extraer de metadatos EXIF usando `exiftool`.
+    *   Carpeta de destino: `YYYYMMDD/MARCA-MODELO_XXXXX` (ej. `20240315/SONY-ILCE-6400_00001`).
+    *   Marca y modelo extraídos usando `exiftool` (si es posible).
 *   **Copia Completa y Robusta:**
-    *   Realiza una copia recursiva de todos los archivos y directorios.
-    *   Preserva metadatos de los archivos.
-    *   Reintentos automáticos para archivos individuales en caso de error.
-*   **Progreso Detallado:** Muestra porcentaje, ETA, contador de archivos y archivo actual durante la copia.
-*   **Control de Copia:** Permite pausar, reanudar y cancelar la operación de copia.
-*   **Gestión de Conflictos de Fecha:** Avisa si la carpeta de fecha ya existe y permite continuar o cambiar la fecha de la copia.
-*   **Menú del Sistema:**
-    *   Cerrar la aplicación.
-    *   Reiniciar la Raspberry Pi (con confirmación).
-    *   Apagar la Raspberry Pi (con confirmación).
+    *   Copia recursiva de archivos y directorios.
+    *   Preserva metadatos (`shutil.copy2`).
+    *   **Verificación de Espacio:** Comprueba si hay suficiente espacio en el destino antes de iniciar la copia.
+    *   **Manejo de Errores Específico:** Detecta y maneja errores comunes como "Disco Lleno" o "Permiso Denegado" durante la copia.
+    *   Reintentos automáticos para errores de copia temporales.
+*   **Progreso Detallado:** Barra de progreso, %, ETA, contador de archivos, archivo actual.
+*   **Control de Copia:** Pausar, Reanudar y Cancelar (con confirmación y opción de limpieza).
+*   **Gestión de Conflictos de Fecha:** Avisa si la carpeta de fecha ya existe y permite continuar o cambiar la fecha (usando un selector táctil).
+*   **Botón de Copia Dinámico:** El botón "Iniciar Copia" se vuelve **verde** cuando la operación está lista.
+*   **Menú del Sistema (Táctil):**
+    *   Acceso mediante un botón "Menú".
+    *   Opciones con botones grandes: Cerrar Aplicación, Reiniciar Pi (con confirmación), Apagar Pi (con confirmación).
 
 ## Requisitos Previos
 
-Antes de ejecutar la aplicación, asegúrate de tener lo siguiente instalado en tu Raspberry Pi:
+Asegúrate de tener instalado en tu Raspberry Pi:
 
 1.  **Python 3.x**
-2.  **Tkinter** (generalmente incluido con Python en Raspberry Pi OS)
-3.  **pip** (instalador de paquetes de Python)
-4.  **psutil:** Para obtener información de los discos.
+2.  **Tkinter** (normalmente incluido)
+3.  **pip** (instalador de paquetes Python)
+4.  **psutil:**
     ```bash
     pip install psutil
     ```
-5.  **exiftool:** Para leer metadatos de imágenes.
+5.  **exiftool:**
     ```bash
     sudo apt update
     sudo apt install libimage-exiftool-perl
@@ -46,62 +48,67 @@ Antes de ejecutar la aplicación, asegúrate de tener lo siguiente instalado en 
 
 ## Instalación y Uso
 
-1.  **Clonar el Repositorio (o descargar el script):**
+1.  **Clonar o Descargar:**
     ```bash
-    git clone https://github.com/tu_usuario/rpi-usb-copier.git
+    git clone https://github.com/loft17/RPi-USB-Copier.git
     cd rpi-usb-copier
     ```
-    O descarga el archivo `app.py` (o como lo hayas llamado) directamente.
+    O descarga el archivo `app.py` (o como lo llames).
 
-2.  **Permisos de Ejecución (Opcional):**
+2.  **Permisos (Opcional):**
     ```bash
     chmod +x app.py
     ```
 
-3.  **Ejecutar la Aplicación:**
+3.  **Ejecutar:**
 
-    *   **Para las funciones de Reinicio/Apagado del Sistema:** La aplicación necesita privilegios de superusuario para ejecutar los comandos `reboot` y `shutdown`. Puedes:
-        *   **Opción A (Más Simple):** Ejecutar la aplicación con `sudo`:
+    *   **Importante (Reinicio/Apagado):** Para usar las funciones de reiniciar o apagar desde el menú, la aplicación necesita permisos.
+        *   **Opción A (Simple):** Ejecutar con `sudo`:
             ```bash
             sudo python3 app.py
             ```
-        *   **Opción B (Más Segura, Recomendada):** Configurar `sudoers` para permitir que tu usuario ejecute los comandos específicos sin contraseña. Crea un archivo (ej. `/etc/sudoers.d/99-rpi-copier`) con el siguiente contenido (reemplaza `tu_usuario_pi` con tu nombre de usuario, usualmente `pi`):
+        *   **Opción B (Recomendada):** Configurar `sudoers` para permitir a tu usuario ejecutar los comandos sin contraseña. Crea un archivo, por ej. `/etc/sudoers.d/99-rpi-copier`, con (reemplaza `tu_usuario_pi`):
             ```
             tu_usuario_pi ALL=(ALL) NOPASSWD: /sbin/reboot, /sbin/shutdown
             ```
-            Luego, puedes ejecutar la aplicación normalmente:
+            *Precaución: Asegúrate de entender las implicaciones de seguridad de `NOPASSWD`.*
+            Luego, ejecuta normalmente:
             ```bash
             python3 app.py
             ```
 
-4.  **Uso de la Interfaz:**
-    *   **Seleccionar Origen:** Pulsa "Seleccionar" en la sección ORIGEN y elige tu dispositivo USB fuente.
-    *   **Seleccionar Destino:** Pulsa "Seleccionar" en la sección DESTINO y elige tu dispositivo USB de respaldo.
-    *   **Iniciar Copia:** Una vez seleccionados origen y destino, el botón "INICIAR COPIA" se volverá verde. Púlsalo para comenzar.
-    *   **Menú:** Pulsa "Menú" para acceder a las opciones de cerrar aplicación, reiniciar o apagar el sistema.
+4.  **Interfaz:**
+    *   Usa los botones "Seleccionar" para elegir Origen y Destino. La lista de dispositivos se obtiene al pulsar el botón.
+    *   Cuando ambos estén seleccionados y válidos, el botón "Iniciar Copia" se pondrá verde.
+    *   Pulsa "Iniciar Copia" para comenzar.
+    *   Usa los botones en la ventana de progreso para Pausar/Reanudar o Cancelar.
+    *   Pulsa "Menú" para acceder a las opciones del sistema.
 
-## Estructura del Proyecto
+## Estructura del Proyecto (Básica)
 
-*   `app.py`: El script principal de la aplicación Python.
+*   `app.py`: Script principal de la aplicación.
 *   `README.md`: Este archivo.
-*   `ruta/a/tu/screenshot.png`: (Opcional) Una captura de pantalla de la aplicación.
+*   `ruta/a/tu/screenshot.png`: (Opcional) Captura de pantalla.
 
 ## Contribuciones
 
-Las contribuciones son bienvenidas. Si tienes ideas para mejorar la aplicación o encuentras algún error, por favor:
-1.  Haz un Fork del proyecto.
-2.  Crea tu Feature Branch (`git checkout -b feature/AmazingFeature`).
-3.  Haz Commit de tus cambios (`git commit -m 'Add some AmazingFeature'`).
-4.  Haz Push a la Branch (`git push origin feature/AmazingFeature`).
+¡Son bienvenidas! Si tienes mejoras o correcciones:
+1.  Fork el proyecto.
+2.  Crea tu branch (`git checkout -b feature/MiMejora`).
+3.  Commit tus cambios (`git commit -m 'Añade MiMejora'`).
+4.  Push a la branch (`git push origin feature/MiMejora`).
 5.  Abre un Pull Request.
 
 ## Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles (si decides añadir uno).
+Distribuido bajo la Licencia MIT. Ver `LICENSE` para más información (si aplica).
 
 ## Agradecimientos
 
-*   A la comunidad de Python y Tkinter.
-*   A los desarrolladores de `psutil` y `exiftool`.
+*   Python & Tkinter community
+*   psutil developers
+*   exiftool by Phil Harvey
 
 ---
+
+Este README describe con precisión el estado funcional de la aplicación incluyendo las mejoras de robustez pero *sin* las últimas dos características solicitadas (refresco manual e indicador de escaneo en botón). Recuerda actualizar los placeholders de la URL del repositorio y la captura de pantalla.
